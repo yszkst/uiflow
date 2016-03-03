@@ -63,7 +63,6 @@ var exec = function(evt){
             fd: null,
             autoClose: true
         }) : process.stdout;
-        console.log(code);
         uiflow.build(code,FORMAT).pipe(output);
     });
 };
