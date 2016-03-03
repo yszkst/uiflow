@@ -1,13 +1,13 @@
 {
   "name": "uiflow",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "uiflow - the simplest way to write down your ui-flow diagram like markdown",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "watch-then": "./bin/uiflow"
+    "uiflow": "./bin/uiflow"
   },
   "repository": {
     "type": "git",
