@@ -1,0 +1,28 @@
+{
+  "name": "uiflow",
+  "version": "1.0.0",
+  "description": "uiflow - the simplest way to write down your ui-flow diagram like markdown",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "watch-then": "./bin/uiflow"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hirokidaichi/uiflow.git"
+  },
+  "author": "hirokidaichi",
+  "license": "MIT",
+  "dependencies": {
+    "glob": "^7.0.0",
+    "glob-watcher": "^2.0.0",
+    "spawn-stream": "^1.0.2",
+    "string-to-stream": "^1.0.1"
+  },
+  "bugs": {
+    "url": "https://github.com/hirokidaichi/uiflow/issues"
+  },
+  "homepage": "https://github.com/hirokidaichi/uiflow"
+}
