@@ -1,11 +1,21 @@
 var SECTION = /\[([^#\]]*)(#+)?\]/;
 var END_OF_SEES = /-+/;
-var END_OF_ACTION = /=+>\s*([^:\]]*)/;
+var END_OF_ACTION = /=+(?:{([^}]+)})?=+>\s*([^:\]]*)/;
 var WHITE_LINE = /^\s*$/;
 
 var lexer = module.exports.lexer = function(text) {
     var state = {};
     return text.split(/\n/).map(parseByLine);
+};
+var parseError = function(fileName) {
+    return function(message, lineNumber) {
+        var error = new Error([
+            fileName || "(anon)", ":", lineNumber, ": error:", message
+        ].join(""));
+        error.lineNumber = lineNumber;
+        error.fileName = fileName;
+        throw error;
+    };
 };
 
 var parseByLine = function(line, num) {
@@ -17,7 +27,7 @@ var parseByLine = function(line, num) {
         return ["endofsee", num];
     }
     if (END_OF_ACTION.test(line)) {
-        return ["endofaction", RegExp.$1, num];
+        return ["endofaction", RegExp.$2, RegExp.$1, num];
     }
     if (WHITE_LINE.test(line)) {
         return ["whiteline", num];
@@ -25,12 +35,13 @@ var parseByLine = function(line, num) {
     return ["text", line, num];
 };
 
-var parseTags = function(listOfNode) {
+var parseTags = function(listOfNode, fileName) {
     var tree = {};
     var nId = 1;
     var currentSection = null;
     var lastAction;
     var actions;
+    var errorMessage = parseError(fileName);
     listOfNode.forEach(function(node) {
         var tag = node[0];
         if (tag == "whiteline") {
@@ -40,15 +51,15 @@ var parseTags = function(listOfNode) {
             currentSection = node[1];
             if (lastAction && !lastAction.direction) {
                 lastAction.direction = currentSection;
-                //previousSection = currentSection;
             }
 
             if (tree[currentSection]) {
-                throw new Error("Duplicated section:" + currentSection + "\tL:" + node[3]);
+                errorMessage("Duplicated section:" + currentSection, node[3]);
             }
             tree[currentSection] = {
                 name: currentSection,
                 rank: node[2],
+                lines: node[3],
                 see: [],
                 id: nId++,
                 actions: [{
@@ -60,25 +71,27 @@ var parseTags = function(listOfNode) {
         }
         if (tag == "endofsee") {
             if (!tree[currentSection]) {
-                throw new Error("Undefined section" + "\tL:" + node[1]);
+                errorMessage("Undefined section [" + currentSection + "]", node[1]);
             }
             if (tree[currentSection].state == "action") {
-                throw new Error("Duplicated sees" + "\tL:" + node[1]);
+                errorMessage("Duplicated sees" + "\tL:", node[1]);
             }
             tree[currentSection].state = "action";
         }
         if (tag == "endofaction") {
             if (!tree[currentSection]) {
-                throw new Error("Undefined section" + "\tL:" + node[2]);
+                errorMessage("Undefined section" + "\tL:", node[3]);
             }
             actions = tree[currentSection].actions;
             actions[actions.length - 1].direction = node[1];
+            actions[actions.length - 1].edge = node[2];
+
             tree[currentSection].state = "endaction";
 
         }
         if (tag == "text") {
             if (!tree[currentSection]) {
-                throw new Error("Undefined section" + "\tL:" + node[2]);
+                errorMessage("Undefined section" + "\tL:", node[2]);
             }
             var state = tree[currentSection].state;
             if (state == "see") {
@@ -100,6 +113,6 @@ var parseTags = function(listOfNode) {
     });
     return tree;
 };
-var parse = module.exports.parse = function(text) {
-    return parseTags(lexer(text));
+var parse = module.exports.parse = function(text, fileName) {
+    return parseTags(lexer(text), fileName);
 };

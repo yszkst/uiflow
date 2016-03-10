@@ -12,11 +12,15 @@ dot.graph = {
 };
 dot.node = {
     style: "solid",
-    fontsize: 12,
+    fontsize: 11,
     margin: "0.1,0.1",
     fontname: "Osaka-Mono",
 };
-dot.edge = {};
+dot.edge = {
+    fontsize: 9,
+    fontname: "Osaka-Mono",
+    color: "#777777"
+};
 
 var tab = function(text, level) {
     var t = "";
@@ -28,7 +32,7 @@ var tab = function(text, level) {
 };
 
 var escapeQuote = function(text) {
-    return '"' + text + '"';
+    return '"' + (text + "").replace(/"/g, "\"") + '"';
 };
 var attributes = function(tabLevel, obj) {
     return Object.keys(obj).map(function(key) {
@@ -62,7 +66,7 @@ var treeToDotDef = function(tree) {
     return Object.keys(tree).map(function(key) {
         var elm = tree[key];
         var noActions = elm.actions.length === 1 && elm.actions[0].text.length === 0;
-        return blanket(1, "n" + elm.id, {
+        return blanket(1, nameOf(elm), {
             shape: "record",
             label: [
                 section("title", elm.name),
@@ -77,20 +81,39 @@ var treeToDotDef = function(tree) {
     }).join("\n");
 };
 
-var arrow = function(from, to) {
-    return tab(from + " -> " + to, 1);
+var arrow = function(from, to, label) {
+    if (!label) {
+        return tab(from + " -> " + to, 1);
+    }
+    return tab(from + " -> " + to + "[ label =" + escapeQuote(label) + "]", 1);
 };
 
+var nameOf = function(elm, port) {
+    var escapedName = escapeQuote(elm.name);
+    if (port) {
+        return escapedName + ":" + port;
+    }
+    return escapedName;
+};
 var treeToDotArrow = function(tree) {
     return Object.keys(tree).map(function(key) {
         var elm = tree[key];
         return elm.actions.map(function(e, i) {
-            var next = tree[e.direction];
-            if (!next) {
+            if (!e.direction) {
                 return "";
             }
-            return arrow("n" + elm.id + ":action" + i, "n" + tree[e.direction].id);
-
+            if (!tree[e.direction]) {
+                return arrow(
+                    nameOf(elm, "action" + i),
+                    escapeQuote(e.direction),
+                    e.edge
+                );
+            }
+            return arrow(
+                nameOf(elm, "action" + i),
+                nameOf(tree[e.direction]),
+                e.edge
+            );
         }).join("\n");
     }).join("\n");
 };
@@ -101,7 +124,7 @@ var treeToDotRank = function(tree) {
     Object.keys(tree).forEach(function(key) {
         var elm = tree[key];
         ranks[elm.rank] = ranks[elm.rank] ? ranks[elm.rank] : [];
-        ranks[elm.rank].push("n" + elm.id);
+        ranks[elm.rank].push(nameOf(elm));
     });
     Object.keys(ranks).forEach(function(key) {
         if (key == '1') {
