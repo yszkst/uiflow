@@ -65,14 +65,6 @@ uiflow -i myapp.txt -f svg
 ```
 myapp.txtをsvg形式で、標準出力に表示する。
 
-
-### 修正と同時に画像も作り直す
-
-```bash:
-uiflow -i myapp.txt -o myapp.png -f png -w
-```
-オプションとして``-w``をつけると監視モードになります。
-
 ## uiflow形式の文法
 
 ### 基本ブロック

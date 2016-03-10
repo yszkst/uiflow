@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 var fs = require("fs");
-var globWatcher = require("glob-watcher");
 var uiflow = require("../index.js");
 var OptionParser = require("option-parser");
 
@@ -36,10 +35,6 @@ op.addOption("f","format","Set output format")
         FORMAT = d;
     });
 
-op.addOption("w","watch","Watch input files and try to compile if modified them.")
-    .action(function(d){
-        ENABLE_WATCH = true;
-    });
 
 op.parse();
 if( ! INPUT_FILE )
@@ -53,18 +48,7 @@ var output = OUTPUT_FILE ? fs.createWriteStream(OUTPUT_FILE,{
     autoClose: true
 }) : process.stdout;
 
-var exec = function(){
-    uiflow.build(INPUT_FILE,FORMAT).pipe(output);
-};
+uiflow.build(INPUT_FILE,FORMAT).pipe(output);
 
-if(! ENABLE_WATCH ){
-    exec();
-}else {
-    var watcher = globWatcher(INPUT_FILE);
 
-    watcher.on("change",exec);
 
-    watcher.on("ready",function () {
-        console.log("watching files:" + INPUT_FILE );
-    });
-}

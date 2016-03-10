@@ -1,7 +1,6 @@
 var fs = require("fs");
 var parser = require("./app/parser");
 var dot = require("./app/dotwriter");
-var flumine = require("flumine");
 var spawnStream = require("spawn-stream");
 var stringStream = require("string-to-stream");
 var streamFromPromise = require("stream-from-promise");
