@@ -58,25 +58,18 @@ uiflow -i myapp.txt -o myapp.png -f png
 
 myapp.txtをpng形式で、myapp.pngに変換する。
 
-### 複数のファイルを合わせて画像にする
-
-```bash:
-uiflow -i myapp/*.txt -o myapp.png -f png  
-```
-
-myappディレクトリ内のtxtファイルすべてをpng形式で、myapp.pngに変換する。
-
 ### svgで出力
 
 ```bash:
-uiflow -i myapp/*.txt -f svg
+uiflow -i myapp.txt -f svg
 ```
-svg形式で、myappディレクトリ内のファイルを標準出力に吐き出す。
+myapp.txtをsvg形式で、標準出力に表示する。
+
 
 ### 修正と同時に画像も作り直す
 
 ```bash:
-uiflow -i myapp/*.txt -o myapp.png -f png -w
+uiflow -i myapp.txt -o myapp.png -f png -w
 ```
 オプションとして``-w``をつけると監視モードになります。
 
@@ -95,6 +88,7 @@ uiflow -i myapp/*.txt -o myapp.png -f png -w
 行動要素2
 ===> 遷移先ページ2名
 ```
+
 
 ![base.png](https://qiita-image-store.s3.amazonaws.com/0/35671/f2b4855d-a53c-5414-50f1-de4f07bc2f16.png "base.png")
 
@@ -120,6 +114,34 @@ uiflow -i myapp/*.txt -o myapp.png -f png -w
 行動要素の``==>``を省略すると次の基本ブロックに自動的につながります。
 
 ![base.png](https://qiita-image-store.s3.amazonaws.com/0/35671/01f02911-6738-549f-dd93-b829887843fb.png "base.png")
+
+
+### 遷移に名前をつける
+``=={hogehoge}=>``と表記して、遷移に名前をつけることができます。
+
+```
+[最初に]
+ユーザーが見るものを書きます。
+--
+ユーザーがする行動を書きます。
+
+[次に]
+ユーザーが見るもの
+--
+ユーザーがすること１
+=={遷移アクション名}=> その結果１
+ユーザーがすること２
+=={API名など}=> その結果２
+
+[その結果１]
+結果
+
+[その結果２]
+結果
+
+```
+![simple-graph.png](https://qiita-image-store.s3.amazonaws.com/0/35671/eff43bff-b436-c9e5-815e-559143cec750.png "simple-graph.png")
+
 
 ### 少し複雑な例
 
