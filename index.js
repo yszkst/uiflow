@@ -37,6 +37,25 @@ var parse = function() {
         callback();
     });
 };
+var complete = function() {
+    return through2.obj(function(parsed, enc, callback) {
+        var sections = [];
+        Object.keys(parsed).forEach(function(key) {
+            var elm = parsed[key];
+            (elm.actions || []).forEach(function(a) {
+                if (a.direction && !parsed[a.direction]) {
+                    sections.push(a.direction);
+                }
+            });
+        });
+        var output = sections.map(function(s) {
+            return "[" + s + "]";
+        }).join("\n\n");
+        this.push(output);
+        callback();
+    });
+
+};
 
 var compile = function() {
     return through2.obj(function(chunk, enc, callback) {
@@ -69,6 +88,7 @@ var FORMAT_TO_PIPELINE = uiflow.FORMAT_TO_PIPELINE = {
     json: [slurp, parse, jsonize],
     png: [slurp, parse, compile, graphviz("png")],
     svg: [slurp, parse, compile, graphviz("svg")],
+    complete: [slurp, parse, complete],
     sketch: function() {},
 };
 
