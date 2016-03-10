@@ -1,10 +1,12 @@
 var fs = require("fs");
+var stream = require("stream");
 var parser = require("./app/parser");
 var dot = require("./app/dotwriter");
 var spawnStream = require("spawn-stream");
 var stringStream = require("string-to-stream");
 var streamFromPromise = require("stream-from-promise");
 var through2 = require("through2");
+//var reduce = require("through2-reduce");
 /*
  plugin : function(fileName,format) -> stream
 
@@ -12,23 +14,34 @@ var through2 = require("through2");
 
 */
 var uiflow = module.exports = {};
-var slurp = function() {
+var slurp = function(fileName) {
+    var content = "";
     return through2.obj(function(chunk, enc, callback) {
-        var that = this;
-        var fileName = String(chunk);
-        fs.readFile(fileName, function(err, content) {
-            if (err) {
-                return callback(err);
-            }
-            that.push({
-                fileName: fileName,
-                content: content
-            });
-            callback();
+        content += chunk;
+        callback();
+    }, function() {
+        //console.log(this);
+        this.push({
+            content: content,
+            fileName: fileName
         });
     });
 };
 
+var pass = function(obj) {
+    var start = stringStream("something");
+    return start.pipe(through2.obj(function(chunk, enc, callback) {
+        this.push(obj);
+        callback();
+    }));
+};
+
+var print = function() {
+    return through2.obj(function(chunk, enc, cb) {
+        console.log(chunk);
+        cb();
+    });
+};
 var parse = function() {
     return through2.obj(function(chunk, enc, callback) {
         var output = parser.parse(String(chunk.content), chunk.fileName);
@@ -71,9 +84,6 @@ var jsonize = function() {
     });
 };
 
-
-
-
 var graphviz = function(format) {
     return function() {
         return spawnStream("dot", ["-T" + format]);
@@ -82,12 +92,12 @@ var graphviz = function(format) {
 
 
 var FORMAT_TO_PIPELINE = uiflow.FORMAT_TO_PIPELINE = {
-    dot: [slurp, parse, compile],
-    meta: [slurp, parse, jsonize],
-    json: [slurp, parse, jsonize],
-    png: [slurp, parse, compile, graphviz("png")],
-    svg: [slurp, parse, compile, graphviz("svg")],
-    complete: [slurp, parse, complete],
+    dot: [parse, compile],
+    meta: [parse, jsonize],
+    json: [parse, jsonize],
+    png: [parse, compile, graphviz("png")],
+    svg: [parse, compile, graphviz("svg")],
+    complete: [parse, complete],
     sketch: function() {},
 };
 
@@ -98,8 +108,12 @@ uiflow.compile = function() {
 };
 
 uiflow.build = function(fileName, format, handleError) {
+    var stream = fs.createReadStream(fileName).pipe(slurp(fileName));
+    return composeStream(stream, format, handleError);
+};
+
+var composeStream = function(stream, format, handleError) {
     var pipes = FORMAT_TO_PIPELINE[format];
-    var stream = stringStream(fileName);
     if (!pipes) {
         throw new Error("undefined format");
     }
@@ -109,4 +123,12 @@ uiflow.build = function(fileName, format, handleError) {
         return acc.pipe(next);
     }, stream);
     return ret;
+
+};
+uiflow.buildWithCode = function(fileName, code, format, handleError) {
+    var stream = pass({
+        fileName: fileName,
+        content: code
+    });
+    return composeStream(stream, format, handleError);
 };
