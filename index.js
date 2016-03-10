@@ -14,6 +14,7 @@ var through2 = require("through2");
 
 */
 var uiflow = module.exports = {};
+
 var slurp = function(fileName) {
     var content = "";
     return through2.obj(function(chunk, enc, callback) {
@@ -44,8 +45,13 @@ var print = function() {
 };
 var parse = function() {
     return through2.obj(function(chunk, enc, callback) {
-        var output = parser.parse(String(chunk.content), chunk.fileName);
-        this.push(output);
+        try {
+            var output = parser.parse(String(chunk.content), chunk.fileName);
+            this.push(output);
+        } catch (e) {
+            callback(e);
+            return;
+        }
         callback();
     });
 };
@@ -71,8 +77,13 @@ var complete = function() {
 
 var compile = function() {
     return through2.obj(function(chunk, enc, callback) {
-        var output = dot.compile(chunk);
-        this.push(output);
+        try {
+            var output = dot.compile(chunk);
+            this.push(output);
+        } catch (e) {
+            callback(e);
+            return;
+        }
         callback();
     });
 };
