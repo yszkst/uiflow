@@ -21,7 +21,6 @@ var slurp = function(fileName) {
         content += chunk;
         callback();
     }, function() {
-        //console.log(this);
         this.push({
             content: content,
             fileName: fileName
@@ -39,7 +38,8 @@ var pass = function(obj) {
 
 var print = function() {
     return through2.obj(function(chunk, enc, cb) {
-        console.log(chunk);
+        console.error(chunk);
+        this.push(chunk);
         cb();
     });
 };
@@ -81,9 +81,11 @@ var compile = function() {
             var output = dot.compile(chunk);
             this.push(output);
         } catch (e) {
+            console.log(e);
             callback(e);
             return;
         }
+        this.emit("end");
         callback();
     });
 };
@@ -97,7 +99,8 @@ var jsonize = function() {
 
 var graphviz = function(format) {
     return function() {
-        return spawnStream("dot", ["-T" + format]);
+        //return spawnStream("node", ["./hoge.js", format]);
+        return spawnStream("dot", ["-T", format]);
     };
 };
 
