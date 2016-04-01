@@ -100,7 +100,7 @@ var jsonize = function() {
 var graphviz = function(format) {
     return function() {
         //return spawnStream("node", ["./hoge.js", format]);
-        return spawnStream("dot", ["-T", format]);
+        return spawnStream(uiflow.DOT_PATH, ["-T", format]);
     };
 };
 
@@ -114,7 +114,7 @@ var FORMAT_TO_PIPELINE = uiflow.FORMAT_TO_PIPELINE = {
     complete: [parse, complete],
     sketch: function() {},
 };
-
+uiflow.DOT_PATH = "dot";
 uiflow.parser = parser;
 uiflow.dotwriter = dot;
 uiflow.compile = function() {
