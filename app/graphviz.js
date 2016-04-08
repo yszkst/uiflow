@@ -14,6 +14,7 @@ var graphviz = module.exports = function(format) {
             return through2(function(chunk, enc, callback) {
                 var svg = viz(String(chunk));
                 this.push(svg);
+                callback();
             });
         }
     }
