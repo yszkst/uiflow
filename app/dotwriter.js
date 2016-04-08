@@ -14,11 +14,11 @@ dot.node = {
     style: "solid",
     fontsize: 11,
     margin: "0.1,0.1",
-    fontname: "Osaka-Mono",
+    fontname: "Osaka-Mono,ＭＳ ゴシック",
 };
 dot.edge = {
     fontsize: 9,
-    fontname: "Osaka-Mono",
+    fontname: "Osaka-Mono,ＭＳ ゴシック",
     color: "#777777"
 };
 
@@ -61,11 +61,29 @@ var section = function(port, text) {
     return "<" + port + ">" + " " + text + "\\l ";
 };
 
-
+var runeWidth = function(str) {
+    if (!str) {
+        return 0;
+    }
+    var count = 0
+    for (var i = 0, l = str.length; i < l; i++) {
+        count += str.charCodeAt(i) <= 255 ? 1 : 2;
+    }
+    return count;
+};
+var maxRuneWidth = function(elm) {
+    var nameWidth = runeWidth(elm.name);
+    var maxSeeWith = Math.max.apply(null, elm.see.map(runeWidth));
+    var maxActionWidth = Math.max.apply(null, elm.actions.map(function(a) {
+        return Math.max.apply(null, a.text.map(runeWidth));
+    }));
+    return Math.max(nameWidth, maxSeeWith, maxActionWidth);
+};
 var treeToDotDef = function(tree) {
     return Object.keys(tree).map(function(key) {
         var elm = tree[key];
         var noActions = elm.actions.length === 1 && elm.actions[0].text.length === 0;
+        var runeWidth = maxRuneWidth(elm);
         return blanket(1, nameOf(elm), {
             shape: "record",
             label: [
@@ -77,6 +95,7 @@ var treeToDotDef = function(tree) {
             ].filter(function(r) {
                 return !!r;
             }).join("|"),
+            width: runeWidth * 1 / 12 + 0.1
         });
     }).join("\n");
 };
