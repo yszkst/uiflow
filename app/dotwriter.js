@@ -79,6 +79,10 @@ var maxRuneWidth = function(elm) {
     }));
     return Math.max(nameWidth, maxSeeWith, maxActionWidth);
 };
+var runeToWidth = function(runeWidth) {
+    var rw = (runeWidth <= 5) ? 5 : runeWidth;
+    return rw / 13 + 0.2;
+};
 var treeToDotDef = function(tree) {
     return Object.keys(tree).map(function(key) {
         var elm = tree[key];
@@ -95,7 +99,7 @@ var treeToDotDef = function(tree) {
             ].filter(function(r) {
                 return !!r;
             }).join("|"),
-            width: runeWidth * 1 / 12 + 0.1
+            width: runeToWidth(runeWidth)
         });
     }).join("\n");
 };
